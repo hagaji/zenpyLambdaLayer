@@ -1,0 +1,47 @@
+#!/bin/sh
+
+USAGE="usage: $0 <command name>\nvalid command names: build delete create"
+
+
+set -eu
+
+if ! type "aws" &> /dev/null; then
+    echo "'aws' was not found in the path.  Install awscli and try again."
+    exit 1
+fi
+
+if [ $# -lt 1 ]; then
+    echo "Error: expected a command."
+    echo -e $USAGE
+    exit 1
+fi
+
+COMMAND="$1"
+
+APP_NAME=zenpyapp
+LAYER_NAME=Zenpy-layer
+STACK_NAME=$LAYER_NAME-$ENV
+
+if [ "$COMMAND" = "deploy" ]; then
+    echo "Executing aws cloudformation deploy..."
+    echo "Deploy to" ${ENV}
+
+    sam package \
+        --template-file ./template.yaml \
+        --output-template-file packaged.yaml \
+        --s3-bucket ${APP_NAME}-${ENV}
+
+    sam deploy \
+        --template-file packaged.yaml \
+        --stack-name ${STACK_NAME} \
+        --capabilities CAPABILITY_NAMED_IAM \
+        --parameter-overrides Env=${ENV}
+
+    rm packaged.yaml
+
+else
+    echo "Error: unknown command name '$COMMAND'."
+    echo -e $USAGE
+    exit 2
+
+fi

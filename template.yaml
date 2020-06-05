@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Zenpy Lambda Layers.
+
+Resources:
+  ZenpyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: Zenpy-python37-layer
+      Description: Zenpy for Python 3.7 library layer
+      ContentUri: ./layer.zip
+      CompatibleRuntimes:
+        - python3.7
+      LicenseInfo: Available under the MIT license
+      RetentionPolicy: Retain
+
+  ZenpyLayerVersionPermission:
+    Type: AWS::Lambda::LayerVersionPermission
+    Properties:
+      Action: lambda:GetLayerVersion
+      LayerVersionArn: !Ref ZenpyLayer
+      Principal: "*"
+
+Outputs:
+  ZenpyLayerArn:
+    Description: Zenpy for Python 3.7 layer ARN
+    Value: !Ref ZenpyLayer
+    Export:
+      Name: "Zenpy-Python37-LayerArn"
+
